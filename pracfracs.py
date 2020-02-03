@@ -14,42 +14,27 @@ import time
 
 # Get params:
 arn = 0
-arn+=1; nLo = int(argv[arn]) if len(argv)>arn else 4
+arn+=1; n   = int(argv[arn]) if len(argv)>arn else 4
 arn+=1; d   = int(argv[arn]) if len(argv)>arn else 17
-arn+=1; kHi = int(argv[arn]) if len(argv)>arn else 3
-arn+=1; nHi = int(argv[arn]) if len(argv)>arn else nLo
+arn+=1; npr = int(argv[arn]) if len(argv)>arn else 100
+arn+=1; kHi = int(argv[arn]) if len(argv)>arn else 5
+arn+=1; fHi = int(argv[arn]) if len(argv)>arn else 50000
 
 def gcd(a,b): # We compute gcd(a,b) if a,b are positive integers
     while a:
         a, b = b % a, a
     return b
 
-def nextTerm(n,d,k,pd):
-    g = gcd(n,d)
-    n1, d1 = n//g, d//g
-    if n1 == 1 and d1>pd:
-        terms[-k]=d1
-        sols.append(terms[:len(terms)-k+1])
-        return
-    t1 = max(pd+1, (d1+n-1)//n) # Find smallest feasible denominator
-    #print (f'k {k}  {n1:3}/{d1:<5}  {t1:4}  {terms}')
-    while k*d1 > n1*t1:         # while k/t > n/d ...
-        terms[-k]=t1
-        n2 = n1*t1 - d1         # n/d - 1/t = (n*t-d)/(d*t)
-        if n2 > 0:
-            nextTerm(n2, d1*t1, k-1, t1)
-        t1 += 1
-
-def nextPrac(d,u,n):
-    # Return small-enough divisors of a practical number m > u, where
-    # 1==(m,d) and 2m>d.  Most practical numbers are multiples of 4 or 6
-    m = max(2*(d//4), 2+((u-2)&(~1)), 6)
-    Prac = False
-    while not Prac:
-        while (m%4>0 and m%6>0) or (gcd(m,d) > 1):
-            m += 2
-        # Compute prime factors of m (using sfn factors table)
-        facs=[];  enpow=bf=0; v=m  
+def nextPrac(d,u):
+    # Find multiples of d (and 4 or 6), larger than u, that are
+    # practical numbers. 
+    minc = d if d%4==0 else (2*d if d%2==0 else 4*d)
+    md = (1+u//minc)*minc;   divs = [];   Prac = False
+    while not Prac and md < fHi:
+        while md%4>0 and md%6>0:
+            md += minc
+        # Compute prime factors of md (using sfn factors table)
+        facs=[];  enpow=bf=0; v=md 
         while v > 1:
             pf = sfn[v]
             v = v//pf
@@ -59,44 +44,70 @@ def nextPrac(d,u,n):
                 enpow = 1
             bf = pf
         facs.append((bf,enpow))
-        #print (f'd {d}   u {u}   m {m} {facs}')
         pows = [[p**j for j in range(e+1)] for p,e in facs]
-        divs = sorted(x for x in map(prod, product(*pows)) if x <= m*n)
-        # Test if divisor-list front sums not less next divisor less 1
-        # (We should test over full list instead of just x <= m*n, but hey)
+        # Divisor test depends on all divisors x, not just x <= m*n
+        divs = sorted(x for x in map(prod, product(*pows)))
+        # Test if divisor-list prefix sums don't rise too fast
         fsum = divs[0]; Prac = True
         for j in range(1,len(divs)):
             if fsum < divs[j]-1:
                 Prac = False
-                m += 2
+                md += minc
                 break
             fsum += divs[j]     # Add current divisor to front sum
-    return m, divs
+    return md, divs
 
-def findSols(n,d,k):
+def findSols(n,d,md,divs,sols):
+    mn = n * (md//d)
+    dix = len(divs)-1
+    #print (mn, md, dix, divs)
+    while divs[dix] > mn and dix>0: dix -= 1
+    #print (f'mn/md {mn}/{md}   divs {divs}  dix {dix}  divs[dix] {divs[dix]}')
+    while 2*divs[dix] >= mn:
+        nums = [md//divs[dix]]
+        tn = mn - divs[dix]
+        tix = dix
+        while tn > 0 and tix > -1:
+            tix -= 1
+            if divs[tix] > tn: continue
+            if len(nums) == kHi: break
+            nums.append(md//divs[tix])
+            tn -= divs[tix]
+            #print (f'mn/md {mn}/{md}   tix {tix}  divs[tix] {divs[tix]}')
+        if tn==0:
+            sol = tuple(nums)
+            if not (sol in sols):
+                sols.append(sol)
+                #print (f'n/d {n}/{d}    mn/md {mn}/{md}    sol {sol}')
+        dix -= 1
+        if dix < 0: break
+    return sols
+
+def listSols(n,d,npracs):
     g = gcd(n,d)
     n, d = n//g, d//g           # Reduce to lowest terms
     # Process some practical numbers m with 1==(m,d) and 2m > d
-    m = 4
+    md = 0
     sols = []
-    for j in range(11):    
-        m, divs = nextPrac(d,m+2,n)
-        print (f'n/d {n}/{d}   j {j}   m {m}   divs {divs}')
+    for j in range(npracs):    
+        md, divs = nextPrac(d,md)
+        if len(divs) < 1: break
+        sols = findSols(n,d,md,divs,sols)
+        #print (f'n/d {n}/{d}   j {j}   md {md}   divs {divs}   sols {sols}')
     return sols
 
 # For use when creating practical numbers, create prl and sfn.
 # prl is a list of primes [2, 3, 5...].           (in 0.5 ms)
 # sfn[j] is a prime divisor of j if fHi > j > 1.  (in 1.5 ms)
-pHi, fHi = 600, 10000
+pHi = 1000
 prl = [2,3,5,7]+[x for x in range(11,pHi,2) if 1==pow(2,x-1,x)==pow(3,x-1,x)==pow(5,x-1,x)==pow(7,x-1,x)]
 sfn = [j for j in range(fHi)]
 for p in prl:
     if p*p > fHi: break         # Beyond sqrt(fHi) we don't care
     for j in range(p, fHi, p): sfn[j]=p # p is a factor of j
 
-for n in range(nLo,nHi+1):
-    t0 = time.time()
-    sols = findSols(n,d,kHi)
-    tus = int((time.time()-t0)*1e6)
-    print (f'{n:3}/{d}: {sols} in {tus} us')
-
+t0 = time.time()
+sols = listSols(n,d,npr)
+tus = int((time.time()-t0)*1e6)
+print (sorted(sols))
+print (f'Generated {len(sols)} sols of length at most {kHi} for {n}/{d} in {tus} us')
