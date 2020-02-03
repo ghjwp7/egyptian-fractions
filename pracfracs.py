@@ -1,29 +1,28 @@
 #!/usr/bin/env python3
 
-# Re: Egyption-fraction expansions of a rational fraction less than 1
+# Re: Egyption-fraction expansions of a rational fraction less than 2
 # - jiw - 2 Feb 2020
 
 # For a given rational fraction, this program tries out various
 # practical-number multipliers to see what Egyption-fraction
-# expansions get generated.
+# expansions get generated.  It displays all the solutions it finds
+# that have no more than kHi terms.
 
 # Parameter default values are shown in this command line:
-#         ./pracfracs.py 4  17  200   5   50000
-# Parameter names:       n   d  npr  kHi   fHi
+#          ./pracfracs.py  4  17   5   50000
+# Parameter names:         n   d  kHi   fHi
 
 # n and d are numerator and denominator of fraction to be expanded as
 #   an Egyptian fraction.  [GCD(n,d) will be divided out.]
-
-# npr = number of practical numbers to try as multipliers for n and d.
 
 # fHi = highest value this routine will factor, ie largest allowed
 #   denominator.  With default parameter values, setting up the tables
 #   of primes and factors takes a few milliseconds.  For large fHi, it
 #   takes several seconds.
 
-# If d and npr are large, make fHi large as well.  For example, use
-#   fHi > d*d or d*npr, etc.  When practical numbers being tested grow
-#   larger than fHi, the test loop exits.
+# If d is large, make fHi large as well.  For example, use fHi > d*d.
+#   When practical numbers being tested grow larger than fHi, the test
+#   loop exits.
 
 from sys import argv
 from numpy import prod
@@ -34,7 +33,6 @@ import time
 arn = 0
 arn+=1; n   = int(argv[arn]) if len(argv)>arn else 4
 arn+=1; d   = int(argv[arn]) if len(argv)>arn else 17
-arn+=1; npr = int(argv[arn]) if len(argv)>arn else 200
 arn+=1; kHi = int(argv[arn]) if len(argv)>arn else 5
 arn+=1; fHi = int(argv[arn]) if len(argv)>arn else 50000
 pHi = 200
@@ -99,17 +97,16 @@ def findSols(n,d,md,divs,sols):
         if dix < 0: break
     return sols
 
-def listSols(n,d,npracs):
+def listSols(n,d):
     g = gcd(n,d)
     n, d = n//g, d//g           # Reduce to lowest terms
-    # Process some practical numbers m with 1==(m,d) and 2m > d
-    md = 0
-    sols = []
-    for j in range(npracs):    
+    md = 0;  sols = [];  npr=0
+    while 1:   
         md, divs = nextPrac(d,md)
         if len(divs) < 1: break
         sols = findSols(n,d,md,divs,sols)
-    return sols
+        npr += 1
+    return sols, npr
 
 # For use when creating practical numbers, create prl and sfn.  prl is
 # a list of primes [2, 3, 5...].  Its formula is good up until
@@ -123,7 +120,7 @@ for p in prl:                   # Run a sieve to set divisors
         sfn[j]=p
 
 t0 = time.time()
-sols = listSols(n,d,npr)
+sols, npr = listSols(n,d)
 tus = int((time.time()-t0)*1e6)
 print (sorted(sols))
-print (f'Generated {len(sols)} sols up to length {kHi} for {n}/{d} in {tus} us')
+print (f'Generated {len(sols)} sols up to length {kHi} for {n}/{d} in {tus} us, trying {npr} practical numbers')
