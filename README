@@ -3,18 +3,22 @@ My egyptian-fractions repository contains programs and data files listed below.
 These programs generate expansions of rational fractions into Egyptian
 fraction representations.  For example, 5/9 = 1/2 + 1/18 = 1/3 + 1/6 + 1/18.
 
+--------------------------------------------------------------------
+  
 Program pracfracs.py uses "practical numbers" to find Egyptian
 fraction representations.  More specifically, when given n, d, and
-other parameters, it generates a series of numbers that it uses as
-multipliers that let it readily form Egyptian fraction representations
-of n/d.  Number m is practical if for any j<m, some distinct divisors
-of m add up to j.  Thus, suppose u = m*d is practical and that
-distinct divisors (d1, d2, d3, ...) of u add up to m*n.  Then n/d =
-m*n/(m*d) = m*n/u = (d1+d2+d3+...)/u, hence d1/u + d2/u + d3/u +
-... is an Egyptian fraction for n/d, because the di are distinct and
-each di/u reduces to a fraction with numerator 1.  pracfracs.py isn't
-exhaustive in its coverage, nor is it clear what it would take to make
-it exhaustive.
+other parameters [described below, at end], it generates a series of
+numbers that it uses as multipliers that let it readily form Egyptian
+fraction representations of n/d.  Number m is practical if for any
+j<m, some distinct divisors of m add up to j.  Thus, suppose u = m*d
+is practical and that distinct divisors (d1, d2, d3, ...) of u add up
+to m*n.  Then n/d = m*n/(m*d) = m*n/u = (d1+d2+d3+...)/u, hence d1/u +
+d2/u + d3/u + ... is an Egyptian fraction for n/d, because the di are
+distinct and each di/u reduces to a fraction with numerator 1.
+pracfracs.py isn't exhaustive in its coverage, nor is it clear what it
+would take to make it exhaustive.
+
+--------------------------------------------------------------------
 
 Program kterms.py exhaustively computes expansions with up to kHi
 terms.  The first three command-line parameters for this program are
@@ -35,7 +39,31 @@ pracfracs.py takes about 1 second to find 21 solutions, 4 seconds to
 find 34 solutions, 16 seconds to find 40 solutions, 40 seconds to find
 50 solutions, etc.
 
+--------------------------------------------------------------------
+
 Program 3terms.py exhaustively computes 1, 2, or 3-term expansions of
 its input, printing denominator lists one set per line; eg, "2 18" and
 "3 6 18".  Its execution time probably is quadratic, O(d*d) for input
 n/d.
+
+--------------------------------------------------------------------
+
+Parameters for pracfracs.py, as described in program comments:
+
+# Parameter default values are shown in this command line:
+#          ./pracfracs.py  4  17   5   50000
+# Parameter names:         n   d  kHi   fHi
+
+# n and d are numerator and denominator of fraction to be expanded as
+#   an Egyptian fraction.  [GCD(n,d) will be divided out.]
+
+# fHi = highest value this routine will factor, ie largest allowed
+#   denominator.  With default parameter values, setting up the tables
+#   of primes and factors takes a few milliseconds.  For large fHi, it
+#   takes several seconds.
+
+# If d is large, make fHi large as well.  For example, use fHi > d*d.
+#   When practical numbers being tested grow larger than fHi, the test
+#   loop exits.
+
+--------------------------------------------------------------------
