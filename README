@@ -16,7 +16,9 @@ to m*n.  Then n/d = m*n/(m*d) = m*n/u = (d1+d2+d3+...)/u, hence d1/u +
 d2/u + d3/u + ... is an Egyptian fraction for n/d, because the di are
 distinct and each di/u reduces to a fraction with numerator 1.
 pracfracs.py isn't exhaustive in its coverage, nor is it clear what it
-would take to make it exhaustive.
+would take to make it exhaustive.  (Note, for a lucid explanation of
+important E-F methods, some using practical numbers, see PDF file
+http://kevingong.com/Math/EgyptianFractions.pdf )
 
 --------------------------------------------------------------------
 
