@@ -1,13 +1,31 @@
 #!/usr/bin/env python3
 
 # Re: Egyption-fraction expansions of a rational fraction less than 1
-# - jiw - 2020
+# - jiw - 2 Feb 2020
 
 # For a given rational fraction, this program tries out various
-# practical-number multipliers to see whether most or all of the
-# possible k-term Egyption-fraction expansions get generated.
+# practical-number multipliers to see what Egyption-fraction
+# expansions get generated.
 
-from sys import argv, exit
+# Parameter default values are shown in this command line:
+#         ./pracfracs.py 4  17  200   5   50000
+# Parameter names:       n   d  npr  kHi   fHi
+
+# n and d are numerator and denominator of fraction to be expanded as
+#   an Egyptian fraction.  [GCD(n,d) will be divided out.]
+
+# npr = number of practical numbers to try as multipliers for n and d.
+
+# fHi = highest value this routine will factor, ie largest allowed
+#   denominator.  With default parameter values, setting up the tables
+#   of primes and factors takes a few milliseconds.  For large fHi, it
+#   takes several seconds.
+
+# If d and npr are large, make fHi large as well.  For example, use
+#   fHi > d*d or d*npr, etc.  When practical numbers being tested grow
+#   larger than fHi, the test loop exits.
+
+from sys import argv
 from numpy import prod
 from itertools import product                                                   
 import time
@@ -16,9 +34,11 @@ import time
 arn = 0
 arn+=1; n   = int(argv[arn]) if len(argv)>arn else 4
 arn+=1; d   = int(argv[arn]) if len(argv)>arn else 17
-arn+=1; npr = int(argv[arn]) if len(argv)>arn else 100
+arn+=1; npr = int(argv[arn]) if len(argv)>arn else 200
 arn+=1; kHi = int(argv[arn]) if len(argv)>arn else 5
 arn+=1; fHi = int(argv[arn]) if len(argv)>arn else 50000
+pHi = 200
+while pHi*pHi < fHi:  pHi = (pHi*6)//5 # Make pHi big enough
 
 def gcd(a,b): # We compute gcd(a,b) if a,b are positive integers
     while a:
@@ -60,9 +80,7 @@ def nextPrac(d,u):
 def findSols(n,d,md,divs,sols):
     mn = n * (md//d)
     dix = len(divs)-1
-    #print (mn, md, dix, divs)
     while divs[dix] > mn and dix>0: dix -= 1
-    #print (f'mn/md {mn}/{md}   divs {divs}  dix {dix}  divs[dix] {divs[dix]}')
     while 2*divs[dix] >= mn:
         nums = [md//divs[dix]]
         tn = mn - divs[dix]
@@ -73,12 +91,10 @@ def findSols(n,d,md,divs,sols):
             if len(nums) == kHi: break
             nums.append(md//divs[tix])
             tn -= divs[tix]
-            #print (f'mn/md {mn}/{md}   tix {tix}  divs[tix] {divs[tix]}')
         if tn==0:
             sol = tuple(nums)
             if not (sol in sols):
                 sols.append(sol)
-                #print (f'n/d {n}/{d}    mn/md {mn}/{md}    sol {sol}')
         dix -= 1
         if dix < 0: break
     return sols
@@ -93,21 +109,21 @@ def listSols(n,d,npracs):
         md, divs = nextPrac(d,md)
         if len(divs) < 1: break
         sols = findSols(n,d,md,divs,sols)
-        #print (f'n/d {n}/{d}   j {j}   md {md}   divs {divs}   sols {sols}')
     return sols
 
-# For use when creating practical numbers, create prl and sfn.
-# prl is a list of primes [2, 3, 5...].           (in 0.5 ms)
-# sfn[j] is a prime divisor of j if fHi > j > 1.  (in 1.5 ms)
-pHi = 1000
+# For use when creating practical numbers, create prl and sfn.  prl is
+# a list of primes [2, 3, 5...].  Its formula is good up until
+# Carmichael number 29341, when a few non-primes start sneaking in.
 prl = [2,3,5,7]+[x for x in range(11,pHi,2) if 1==pow(2,x-1,x)==pow(3,x-1,x)==pow(5,x-1,x)==pow(7,x-1,x)]
-sfn = [j for j in range(fHi)]
-for p in prl:
-    if p*p > fHi: break         # Beyond sqrt(fHi) we don't care
-    for j in range(p, fHi, p): sfn[j]=p # p is a factor of j
+# sfn[j] is a prime divisor of j if fHi > j > 1.
+sfn = [j for j in range(fHi)]   # Init sfn[j] to j
+for p in prl:                   # Run a sieve to set divisors
+    if p*p > fHi: break
+    for j in range(p, fHi, p):  # Set sfn[j] to p if p|j 
+        sfn[j]=p
 
 t0 = time.time()
 sols = listSols(n,d,npr)
 tus = int((time.time()-t0)*1e6)
 print (sorted(sols))
-print (f'Generated {len(sols)} sols of length at most {kHi} for {n}/{d} in {tus} us')
+print (f'Generated {len(sols)} sols up to length {kHi} for {n}/{d} in {tus} us')
