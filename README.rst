@@ -1,11 +1,37 @@
-My egyptian-fractions repository contains programs and data files listed below.
+.. -*- mode: rst -*-
+..  To view this as a local file in browser, use `restview README.rst`
+..  Browser page will update whenever a changed version is stored.
+
+===================
+Egyptian Fractions
+===================
+
+My egyptian-fractions repository contains programs and data files
+listed below and at https://github.com/ghjwp7/egyptian-fractions
+~ by James Waldby ~ Feb 2020, Nov 2023
 
 These programs generate expansions of rational fractions into Egyptian
-fraction representations.  For example, 5/9 = 1/2 + 1/18 = 1/3 + 1/6 + 1/18.
+fraction representations, that is, as sums of unit fractions.  For
+example, 5/9 = 1/2 + 1/18 = 1/3 + 1/6 + 1/18.
+
+Useful references may include:
+ https://en.wikipedia.org/wiki/Egyptian_fraction
+ https://en.wikipedia.org/wiki/Greedy_algorithm_for_Egyptian_fractions
+ https://en.wikipedia.org/wiki/Engel_expansion
+ https://en.wikipedia.org/wiki/Practical_number#Practical_numbers_and_Egyptian_fractions
+
+Project Contents:
+------------------
+
+Programs in this repository include `3terms.py, gterms.py, kterms.py,`
+and `pracfracs.py`, as described below.  Data files with `n#d#k#` names
+represent output from when kterms was run with specified integers as
+parameters.  For example file `n13d79k4` contains output from
+`./kterms.py 13 79 4`
 
 --------------------------------------------------------------------
   
-Program pracfracs.py uses "practical numbers" to find Egyptian
+Program **pracfracs.py** uses "practical numbers" to find Egyptian
 fraction representations.  More specifically, when given n, d, and
 other parameters [described below, at end], it generates a series of
 numbers that it uses as multipliers that let it readily form Egyptian
@@ -22,7 +48,7 @@ http://kevingong.com/Math/EgyptianFractions.pdf )
 
 --------------------------------------------------------------------
 
-Program kterms.py exhaustively computes expansions with up to kHi
+Program **kterms.py** exhaustively computes expansions with up to kHi
 terms.  The first three command-line parameters for this program are
 n, d, and kHi.  Example: ./kterms.py 5 19 2 finds all the two-term
 expansions of 5/19, outputting a line like "5/19: [[4, 76]] in 8 us".
@@ -43,7 +69,7 @@ find 34 solutions, 16 seconds to find 40 solutions, 40 seconds to find
 
 --------------------------------------------------------------------
 
-Program gterms.py is like kterms, with differences as follows: (1)
+Program **gterms.py** is like kterms, with differences as follows: (1)
 uses gmpy mpz integers for calcs, (2) displays Engel series and
 Fibonacci / greedy algorithm results, (3) if interrupted early,
 displays up to ~10 solutions [vs ~6], and (4) displays solutions in
@@ -52,10 +78,10 @@ in comments at front of gterms.
 
 --------------------------------------------------------------------
 
-Program 3terms.py exhaustively computes 1, 2, or 3-term expansions of
+Program **3terms.py** exhaustively computes 1, 2, or 3-term expansions of
 its input, printing denominator lists one set per line; eg, "2 18" and
 "3 6 18".  Its execution time probably is quadratic, O(d*d) for input
-n/d.
+n/d, as in essence it has one O(d) while loop nested within another.
 
 --------------------------------------------------------------------
 
@@ -78,3 +104,5 @@ Parameters for pracfracs.py, as described in program comments:
 #   loop exits.
 
 --------------------------------------------------------------------
+
+-30-
