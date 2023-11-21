@@ -43,6 +43,15 @@ find 34 solutions, 16 seconds to find 40 solutions, 40 seconds to find
 
 --------------------------------------------------------------------
 
+Program gterms.py is like kterms, with differences as follows: (1)
+uses gmpy mpz integers for calcs, (2) displays Engel series and
+Fibonacci / greedy algorithm results, (3) if interrupted early,
+displays up to ~10 solutions [vs ~6], and (4) displays solutions in
+ascending order of sum of denominators.  See example outputs included
+in comments at front of gterms.
+
+--------------------------------------------------------------------
+
 Program 3terms.py exhaustively computes 1, 2, or 3-term expansions of
 its input, printing denominator lists one set per line; eg, "2 18" and
 "3 6 18".  Its execution time probably is quadratic, O(d*d) for input
